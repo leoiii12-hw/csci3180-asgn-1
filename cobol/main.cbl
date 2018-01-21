@@ -10,13 +10,23 @@
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
+            *> INPUT
             SELECT T-FILE ASSIGN TO 'teams.txt'
               ORGANIZATION IS LINE SEQUENTIAL.
             SELECT SR-FILE ASSIGN TO 'submission-records.txt'
               ORGANIZATION IS LINE SEQUENTIAL.
+            
+            *> OUTPUT
+            SELECT NEW-FILE ASSIGN TO 'reportcob.txt'
+              ORGANIZATION IS SEQUENTIAL.
+            SELECT TEAM-NAME-FILE ASSIGN TO 'reportcob.txt'
+              ORGANIZATION IS SEQUENTIAL.
+            SELECT PROBLEM-FILE ASSIGN TO 'reportcob.txt'
+              ORGANIZATION IS SEQUENTIAL.
 
        DATA DIVISION.
        FILE SECTION.
+      *>  INPUT
        FD T-FILE.
        01 TEAMS.
             02 TEAM-NAME PIC X(15).
@@ -26,6 +36,18 @@
             04 PROBLEM-ID PIC 9(1).
             04 OUTCOME PIC X(19).
             04 SCORE PIC 9(3).
+      *> OUTPUT
+       FD NEW-FILE.
+       01 NF-HEADER.
+            02 NF-HEADER-DATA PIC X(100).
+       FD TEAM-NAME-FILE.
+       01 TNF-TEAM-NAME.
+            02 TNF-TEAM-NAME-DATA PIC X(15).
+       FD PROBLEM-FILE.      
+       01 P-PROBLEM.
+            03 P-LEFT-QUOTE PIC X(1).
+            03 P-PROBLEM-ID PIC X(1).
+            03 P-RIGHT-QUOTE PIC X(1).
 
        WORKING-STORAGE SECTION.
        01 WS-TEAM.
@@ -54,10 +76,26 @@
        
        PROCEDURE DIVISION.
        MAIN-PROC.
+            PERFORM CREATE-OUTPUT-PROC.
+
             OPEN INPUT T-FILE.
             OPEN INPUT SR-FILE.
             
             GO TO TEAM-PROC.
+       CREATE-OUTPUT-PROC.
+            OPEN OUTPUT NEW-FILE.
+
+            MOVE "2018 CUHK CSE Programming Contest" TO NF-HEADER-DATA
+            WRITE NF-HEADER
+                  AFTER ADVANCING 1 LINE.
+            MOVE "Team Score Report" TO NF-HEADER-DATA
+            WRITE NF-HEADER
+                  AFTER ADVANCING 1 LINE.
+            MOVE " " TO NF-HEADER-DATA
+            WRITE NF-HEADER
+                  AFTER ADVANCING 1 LINE.
+
+            CLOSE NEW-FILE.
        RESET-ALL-VARIABLES-PROC.
             *> DISPLAY "RESET-ALL-VARIABLES-PROC".
             MOVE 0 TO WS-PROCESSING-PROBLEM-ID.
@@ -76,7 +114,7 @@
             *> DISPLAY "END-PROC".
 
             CLOSE T-FILE.
-            CLOSE SR-FILE.            
+            CLOSE SR-FILE.     
 
             STOP RUN.
        TEAM-PROC.
@@ -88,7 +126,13 @@
 
             PERFORM RESET-ALL-VARIABLES-PROC.
 
-            DISPLAY T-TEAM-NAME NO ADVANCING.
+            *> DISPLAY T-TEAM-NAME NO ADVANCING.
+
+            OPEN EXTEND TEAM-NAME-FILE.
+            MOVE T-TEAM-NAME TO TNF-TEAM-NAME-DATA.
+            WRITE TNF-TEAM-NAME.
+            CLOSE TEAM-NAME-FILE.
+
             GO TO SCAN-RECORDS-PROC.
        SCAN-RECORDS-PROC.
             *> DISPLAY "SCAN-RECORDS-PROC".
@@ -98,7 +142,15 @@
             OPEN INPUT SR-FILE.
 
             MOVE WS-PROCESSING-PROBLEM-ID TO ONE_NUMBER_STRING
-            DISPLAY "(", ONE_NUMBER_STRING, ")" NO ADVANCING
+
+            *> DISPLAY "(", ONE_NUMBER_STRING, ")" NO ADVANCING
+
+            OPEN EXTEND PROBLEM-FILE.
+            MOVE "(" TO P-LEFT-QUOTE.
+            MOVE ONE_NUMBER_STRING TO P-PROBLEM-ID.
+            MOVE ")" TO P-RIGHT-QUOTE.
+            WRITE P-PROBLEM.
+            CLOSE PROBLEM-FILE.
 
             PERFORM RESET-PROBLEM-VARIABLES-PROC.
 
