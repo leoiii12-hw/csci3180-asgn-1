@@ -38,6 +38,8 @@
       
        01 WS-PROCESSING-PROBLEM-ID PIC 9(2).
 
+       01 WS-PROBLEM-MIN-SCORE PIC 9(3).
+       01 WS-PROBLEM-MAX-SCORE PIC 9(3).
        01 WS-PROBLEM-BASE-SCORE PIC 9(3).
        01 WS-PROBLEM-NUM-OF-SUBMISSIONS PIC 9(3).
        01 WS-PROBLEM-TOTAL-SCORE PIC 9(3).
@@ -56,13 +58,25 @@
             OPEN INPUT SR-FILE.
             
             GO TO TEAM-PROC.
+       RESET-ALL-VARIABLES-PROC.
+            *> DISPLAY "RESET-ALL-VARIABLES-PROC".
+            MOVE 0 TO WS-PROCESSING-PROBLEM-ID.
+
+            MOVE 0 TO WS-PROBLEM-MIN-SCORE.
+            MOVE 0 TO WS-PROBLEM-MAX-SCORE.
+            MOVE 0 TO WS-PROBLEM-BASE-SCORE.
+            MOVE 0 TO WS-PROBLEM-NUM-OF-SUBMISSIONS.
+            MOVE 0 TO WS-PROBLEM-TOTAL-SCORE.
+
+            MOVE 0 TO WS-PROBLEM-FINAL-SCORE.
+            MOVE 0 TO WS-ALL-PROBLEMS-SCORE.
        END-PROC.
             *> DISPLAY "END-PROC".
 
             CLOSE T-FILE.
             CLOSE SR-FILE.            
 
-            STOP RUN.          
+            STOP RUN.
        TEAM-PROC.
             *> DISPLAY "TEAM-PROC".
 
@@ -70,22 +84,9 @@
                   AT END GO TO END-PROC
             END-READ.
 
-            MOVE 0 TO WS-PROCESSING-PROBLEM-ID.
-
-            MOVE 0 TO WS-PROBLEM-BASE-SCORE.
-            MOVE 0 TO WS-PROBLEM-NUM-OF-SUBMISSIONS.
-            MOVE 0 TO WS-PROBLEM-TOTAL-SCORE.
-
-            MOVE 0 TO WS-PROBLEM-FINAL-SCORE.
-            MOVE 0 TO WS-ALL-PROBLEMS-SCORE.
+            PERFORM RESET-ALL-VARIABLES-PROC.
 
             DISPLAY T-TEAM-NAME NO ADVANCING.
-            PERFORM TEAM-SUB-PROC.
-            
-            GO TO TEAM-PROC.
-       TEAM-SUB-PROC.
-            *> DISPLAY "TEAM-SUB-PROC".          
-       
             GO TO SCAN-RECORDS-PROC.
        SCAN-RECORDS-PROC.
             *> DISPLAY "SCAN-RECORDS-PROC".
@@ -132,6 +133,8 @@
             *>       WS-PROBLEM-NUM-OF-SUBMISSIONS, " ",
             *>       WS-PROBLEM-TOTAL-SCORE.
        PROBLEM-POST-PROC.
+            *> DISPLAY "PROBLEM-POST-PROC".
+
             ADD 1 TO WS-PROCESSING-PROBLEM-ID
                   GIVING WS-PROCESSING-PROBLEM-ID.
 
@@ -142,9 +145,10 @@
                   GO TO TEAM-PROC
             END-IF.
 
-            GO TO TEAM-SUB-PROC.
+            GO TO SCAN-RECORDS-PROC.
        SCORE-PRINTING-PROC.
             *> DISPLAY "SCORE-PRINTING-PROC".
+
             MOVE 0 TO WS-PROBLEM-FINAL-SCORE.
 
             *> DISPLAY
@@ -172,6 +176,8 @@
                   DISPLAY THREE_STRING, " " NO ADVANCING
             END-IF.
        TEAM-TOTAL-SCORE-PROC.
+            *> DISPLAY "TEAM-TOTAL-SCORE-PROC".
+
             DISPLAY "T:" NO ADVANCING.
 
             IF WS-ALL-PROBLEMS-SCORE = 0 THEN
