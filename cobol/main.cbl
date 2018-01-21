@@ -62,14 +62,16 @@
             *> DISPLAY "RESET-ALL-VARIABLES-PROC".
             MOVE 0 TO WS-PROCESSING-PROBLEM-ID.
 
-            MOVE 0 TO WS-PROBLEM-MIN-SCORE.
+            PERFORM RESET-PROBLEM-VARIABLES-PROC.
+
+            MOVE 0 TO WS-PROBLEM-FINAL-SCORE.
+            MOVE 0 TO WS-ALL-PROBLEMS-SCORE.
+       RESET-PROBLEM-VARIABLES-PROC.
+            MOVE 100 TO WS-PROBLEM-MIN-SCORE.
             MOVE 0 TO WS-PROBLEM-MAX-SCORE.
             MOVE 0 TO WS-PROBLEM-BASE-SCORE.
             MOVE 0 TO WS-PROBLEM-NUM-OF-SUBMISSIONS.
             MOVE 0 TO WS-PROBLEM-TOTAL-SCORE.
-
-            MOVE 0 TO WS-PROBLEM-FINAL-SCORE.
-            MOVE 0 TO WS-ALL-PROBLEMS-SCORE.
        END-PROC.
             *> DISPLAY "END-PROC".
 
@@ -98,9 +100,7 @@
             MOVE WS-PROCESSING-PROBLEM-ID TO ONE_NUMBER_STRING
             DISPLAY "(", ONE_NUMBER_STRING, ")" NO ADVANCING
 
-            MOVE 0 TO WS-PROBLEM-BASE-SCORE.
-            MOVE 0 TO WS-PROBLEM-NUM-OF-SUBMISSIONS.
-            MOVE 0 TO WS-PROBLEM-TOTAL-SCORE.
+            PERFORM RESET-PROBLEM-VARIABLES-PROC.
 
             GO TO SCAN-RECORDS-LOOP-PROC.
        SCAN-RECORDS-LOOP-PROC.
@@ -119,12 +119,18 @@
             GO TO SCAN-RECORDS-LOOP-PROC.
        SCAN-RECORDS-ACTION-PROC.
             *> DISPLAY "SCAN-RECORDS-ACTION-PROC".
-       
-            IF WS-PROBLEM-BASE-SCORE < SR-SCORE THEN
-                  MOVE SR-SCORE TO WS-PROBLEM-BASE-SCORE
+
+            MOVE SR-SCORE TO WS-PROBLEM-BASE-SCORE.            
+            IF SR-SCORE < WS-PROBLEM-MIN-SCORE THEN
+                  MOVE SR-SCORE TO WS-PROBLEM-MIN-SCORE
             END-IF.
+            IF SR-SCORE > WS-PROBLEM-MAX-SCORE THEN
+                  MOVE SR-SCORE TO WS-PROBLEM-MAX-SCORE
+            END-IF.
+
             ADD 1 TO WS-PROBLEM-NUM-OF-SUBMISSIONS
                   GIVING WS-PROBLEM-NUM-OF-SUBMISSIONS.
+
             ADD SR-SCORE TO WS-PROBLEM-TOTAL-SCORE
                   GIVING WS-PROBLEM-TOTAL-SCORE.
 
@@ -150,23 +156,50 @@
             *> DISPLAY "SCORE-PRINTING-PROC".
 
             MOVE 0 TO WS-PROBLEM-FINAL-SCORE.
-
+            
             *> DISPLAY
+            *>       "*",
             *>       WS-PROBLEM-BASE-SCORE, " ",
             *>       WS-PROBLEM-NUM-OF-SUBMISSIONS, " ",
-            *>       WS-PROBLEM-TOTAL-SCORE.
+            *>       WS-PROBLEM-TOTAL-SCORE, " ",
+            *>       WS-PROBLEM-MAX-SCORE, " "
+            *>       WS-PROBLEM-MIN-SCORE, " "
+            *>       WS-PROBLEM-FINAL-SCORE,
+            *>       "*" NO ADVANCING.
             
+            *> base_score
             COMPUTE WS-PROBLEM-FINAL-SCORE =
-                  0.6 * 
-                  WS-PROBLEM-BASE-SCORE / 
-                  WS-PROBLEM-NUM-OF-SUBMISSIONS +
+                        WS-PROBLEM-FINAL-SCORE +
+                        0.6 *
+                        WS-PROBLEM-BASE-SCORE
+            IF WS-PROBLEM-BASE-SCORE < 100 THEN
+                  COMPUTE WS-PROBLEM-FINAL-SCORE =
+                        WS-PROBLEM-FINAL-SCORE / 
+                        WS-PROBLEM-NUM-OF-SUBMISSIONS
+            END-IF
+
+            *> average_score
+            COMPUTE WS-PROBLEM-FINAL-SCORE =
+                  WS-PROBLEM-FINAL-SCORE +
                   0.3 * 
                   WS-PROBLEM-TOTAL-SCORE / 
                   WS-PROBLEM-NUM-OF-SUBMISSIONS.
 
+            *> robutness_score
+            IF WS-PROBLEM-MAX-SCORE > 30 THEN
+                  COMPUTE WS-PROBLEM-FINAL-SCORE = 
+                        WS-PROBLEM-FINAL-SCORE +
+                        0.1 *
+                        (100 - 
+                        WS-PROBLEM-MAX-SCORE + 
+                        WS-PROBLEM-MIN-SCORE)
+            END-IF.
+
+            *> ADD TO TOTAL
             ADD WS-PROBLEM-FINAL-SCORE TO WS-ALL-PROBLEMS-SCORE
                   GIVING WS-ALL-PROBLEMS-SCORE.
 
+            *> DISPLAY
             IF WS-PROBLEM-FINAL-SCORE = 0 THEN
                   DISPLAY "  0 " NO ADVANCING
             END-IF.
