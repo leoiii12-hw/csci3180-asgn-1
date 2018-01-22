@@ -23,6 +23,10 @@
               ORGANIZATION IS SEQUENTIAL.
             SELECT PROBLEM-FILE ASSIGN TO 'reportcob.txt'
               ORGANIZATION IS SEQUENTIAL.
+            SELECT SCORE-FILE ASSIGN TO 'reportcob.txt'
+              ORGANIZATION IS SEQUENTIAL.
+            *> SELECT FINAL-SCORE-FILE ASSIGN TO 'reportcob.txt'
+            *>   ORGANIZATION IS SEQUENTIAL.
 
        DATA DIVISION.
        FILE SECTION.
@@ -48,6 +52,11 @@
             03 P-LEFT-QUOTE PIC X(1).
             03 P-PROBLEM-ID PIC X(1).
             03 P-RIGHT-QUOTE PIC X(1).
+       FD SCORE-FILE.      
+       01 S-PROBLEM.
+            03 S-SCORE PIC X(3).
+            03 S-SPACE PIC X(1).
+
 
        WORKING-STORAGE SECTION.
        01 WS-TEAM.
@@ -77,6 +86,7 @@
        PROCEDURE DIVISION.
        MAIN-PROC.
             PERFORM CREATE-OUTPUT-PROC.
+            PERFORM DISPLAY-HEADER-PROC.
 
             OPEN INPUT T-FILE.
             OPEN INPUT SR-FILE.
@@ -84,17 +94,6 @@
             GO TO TEAM-PROC.
        CREATE-OUTPUT-PROC.
             OPEN OUTPUT NEW-FILE.
-
-            MOVE "2018 CUHK CSE Programming Contest" TO NF-HEADER-DATA
-            WRITE NF-HEADER
-                  AFTER ADVANCING 1 LINE.
-            MOVE "Team Score Report" TO NF-HEADER-DATA
-            WRITE NF-HEADER
-                  AFTER ADVANCING 1 LINE.
-            MOVE " " TO NF-HEADER-DATA
-            WRITE NF-HEADER
-                  AFTER ADVANCING 1 LINE.
-
             CLOSE NEW-FILE.
        RESET-ALL-VARIABLES-PROC.
             *> DISPLAY "RESET-ALL-VARIABLES-PROC".
@@ -120,18 +119,13 @@
        TEAM-PROC.
             *> DISPLAY "TEAM-PROC".
 
+            PERFORM RESET-ALL-VARIABLES-PROC.
+
             READ T-FILE INTO WS-TEAM
                   AT END GO TO END-PROC
             END-READ.
 
-            PERFORM RESET-ALL-VARIABLES-PROC.
-
-            *> DISPLAY T-TEAM-NAME NO ADVANCING.
-
-            OPEN EXTEND TEAM-NAME-FILE.
-            MOVE T-TEAM-NAME TO TNF-TEAM-NAME-DATA.
-            WRITE TNF-TEAM-NAME.
-            CLOSE TEAM-NAME-FILE.
+            PERFORM DISPLAY-TEAM-NAME-PROC.
 
             GO TO SCAN-RECORDS-PROC.
        SCAN-RECORDS-PROC.
@@ -141,16 +135,7 @@
             CLOSE SR-FILE.
             OPEN INPUT SR-FILE.
 
-            MOVE WS-PROCESSING-PROBLEM-ID TO ONE_NUMBER_STRING
-
-            *> DISPLAY "(", ONE_NUMBER_STRING, ")" NO ADVANCING
-
-            OPEN EXTEND PROBLEM-FILE.
-            MOVE "(" TO P-LEFT-QUOTE.
-            MOVE ONE_NUMBER_STRING TO P-PROBLEM-ID.
-            MOVE ")" TO P-RIGHT-QUOTE.
-            WRITE P-PROBLEM.
-            CLOSE PROBLEM-FILE.
+            PERFORM DISPLAY-PROBLEM-ID-PROC.
 
             PERFORM RESET-PROBLEM-VARIABLES-PROC.
 
@@ -199,7 +184,7 @@
             PERFORM PROBLEM-SCORE-PRINT-PROC.
 
             IF WS-PROCESSING-PROBLEM-ID = 10 THEN
-                  PERFORM TEAM-TOTAL-SCORE-PRINT-PROC
+                  PERFORM DISPLAY-TEAM-SCORE-PROC
                   GO TO TEAM-PROC
             END-IF.
 
@@ -251,18 +236,51 @@
             ADD WS-PROBLEM-FINAL-SCORE TO WS-ALL-PROBLEMS-SCORE
                   GIVING WS-ALL-PROBLEMS-SCORE.
 
-            *> DISPLAY
+            PERFORM DISPLAY-PROBLEM-SCORE-PROC.
+       DISPLAY-HEADER-PROC.
+            DISPLAY "2018 CUHK CSE Programming Contest".
+            DISPLAY "Team Score Report".
+            DISPLAY "".
+
+            *> OPEN EXTEND NEW-FILE.
+            *> MOVE "2018 CUHK CSE Programming Contest" TO NF-HEADER-DATA
+            *> WRITE NF-HEADER
+            *>       AFTER ADVANCING 1 LINE.
+            *> MOVE "Team Score Report" TO NF-HEADER-DATA
+            *> WRITE NF-HEADER
+            *>       AFTER ADVANCING 1 LINE.
+            *> MOVE " " TO NF-HEADER-DATA
+            *> WRITE NF-HEADER
+            *>       AFTER ADVANCING 1 LINE.
+            *> CLOSE NEW-FILE.
+       DISPLAY-TEAM-NAME-PROC.
+            DISPLAY T-TEAM-NAME NO ADVANCING.
+
+            *> OPEN EXTEND TEAM-NAME-FILE.
+            *> MOVE T-TEAM-NAME TO TNF-TEAM-NAME-DATA.
+            *> WRITE TNF-TEAM-NAME.
+            *> CLOSE TEAM-NAME-FILE.
+       DISPLAY-PROBLEM-ID-PROC.
+            MOVE WS-PROCESSING-PROBLEM-ID TO ONE_NUMBER_STRING.
+            DISPLAY "(", ONE_NUMBER_STRING, ")" NO ADVANCING.
+
+            *> OPEN EXTEND PROBLEM-FILE.
+            *> MOVE "(" TO P-LEFT-QUOTE.
+            *> MOVE ONE_NUMBER_STRING TO P-PROBLEM-ID.
+            *> MOVE ")" TO P-RIGHT-QUOTE.
+            *> WRITE P-PROBLEM.
+            *> CLOSE PROBLEM-FILE.
+       DISPLAY-PROBLEM-SCORE-PROC.
             IF WS-PROBLEM-FINAL-SCORE = 0 THEN
                   DISPLAY "  0 " NO ADVANCING
             END-IF.
+            
             IF WS-PROBLEM-FINAL-SCORE > 0 THEN
                   MOVE WS-PROBLEM-FINAL-SCORE TO THREE_STRING
                   INSPECT THREE_STRING REPLACING LEADING "0" BY " "
                   DISPLAY THREE_STRING, " " NO ADVANCING
             END-IF.
-       TEAM-TOTAL-SCORE-PRINT-PROC.
-            *> DISPLAY "TEAM-TOTAL-SCORE-PRINT-PROC".
-
+       DISPLAY-TEAM-SCORE-PROC.
             DISPLAY "T:" NO ADVANCING.
 
             IF WS-ALL-PROBLEMS-SCORE = 0 THEN
@@ -273,5 +291,4 @@
                   INSPECT FOUR_STRING REPLACING LEADING "0" BY " "
                   DISPLAY FOUR_STRING, " "
             END-IF.
-            
        END PROGRAM YOUR-PROGRAM-NAME.
