@@ -1,8 +1,21 @@
       ******************************************************************
-      * Author: Choi Man Kin
-      * Date: 17 Jan 2018
-      * Purpose:
-      * Tectonics: cobc
+      *> /*
+      *>  * CSCI3180 Principles of Programming Languages
+      *>  *
+      *>  * --- Declaration ---
+      *>  *
+      *>  * I declare that the assignment here submitted is original except for source
+      *>  * material explicitly acknowledged. I also acknowledge that I am aware of
+      *>  * University policy and regulations on honesty in academic work, and of the
+      *>  * disciplinary guidelines and procedures applicable to breaches of such policy
+      *>  * and regulations, as contained in the website
+      *>  * http://www.cuhk.edu.hk/policy/academichonesty/
+      *>  *
+      *>  * Assignment 1
+      *>  * Name : Choi Man Kin
+      *>  * Student ID : 1155077469
+      *>  * Email Addr : mkchoi6@cse.cuhk.edu.hk
+      *>  */
       ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. YOUR-PROGRAM-NAME.
@@ -25,8 +38,8 @@
               ORGANIZATION IS SEQUENTIAL.
             SELECT SCORE-FILE ASSIGN TO 'reportcob.txt'
               ORGANIZATION IS SEQUENTIAL.
-            *> SELECT FINAL-SCORE-FILE ASSIGN TO 'reportcob.txt'
-            *>   ORGANIZATION IS SEQUENTIAL.
+      *> SELECT FINAL-SCORE-FILE ASSIGN TO 'reportcob.txt'
+      *>   ORGANIZATION IS SEQUENTIAL.
 
        DATA DIVISION.
        FILE SECTION.
@@ -96,7 +109,7 @@
             OPEN OUTPUT NEW-FILE.
             CLOSE NEW-FILE.
        RESET-ALL-VARIABLES-PROC.
-            *> DISPLAY "RESET-ALL-VARIABLES-PROC".
+      *> DISPLAY "RESET-ALL-VARIABLES-PROC".
             MOVE 0 TO WS-PROCESSING-PROBLEM-ID.
 
             PERFORM RESET-PROBLEM-VARIABLES-PROC.
@@ -110,14 +123,14 @@
             MOVE 0 TO WS-PROBLEM-NUM-OF-SUBMISSIONS.
             MOVE 0 TO WS-PROBLEM-TOTAL-SCORE.
        END-PROC.
-            *> DISPLAY "END-PROC".
+      *> DISPLAY "END-PROC".
 
             CLOSE T-FILE.
             CLOSE SR-FILE.     
 
             STOP RUN.
        TEAM-PROC.
-            *> DISPLAY "TEAM-PROC".
+      *> DISPLAY "TEAM-PROC".
 
             PERFORM RESET-ALL-VARIABLES-PROC.
 
@@ -129,9 +142,9 @@
 
             GO TO SCAN-RECORDS-PROC.
        SCAN-RECORDS-PROC.
-            *> DISPLAY "SCAN-RECORDS-PROC".
-       
-            *> RESET SR-FILE
+      *> DISPLAY "SCAN-RECORDS-PROC".
+      
+      *> RESET SR-FILE
             CLOSE SR-FILE.
             OPEN INPUT SR-FILE.
 
@@ -141,7 +154,7 @@
 
             GO TO SCAN-RECORDS-LOOP-PROC.
        SCAN-RECORDS-LOOP-PROC.
-            *> DISPLAY "SCAN-RECORDS-LOOP-PROC".
+      *> DISPLAY "SCAN-RECORDS-LOOP-PROC".
        
             READ SR-FILE INTO WS-SUBMISSION-RECORD
                   AT END GO TO PROBLEM-POST-PROC
@@ -155,7 +168,7 @@
 
             GO TO SCAN-RECORDS-LOOP-PROC.
        SCAN-RECORDS-ACTION-PROC.
-            *> DISPLAY "SCAN-RECORDS-ACTION-PROC".
+      *> DISPLAY "SCAN-RECORDS-ACTION-PROC".
 
             MOVE SR-SCORE TO WS-PROBLEM-BASE-SCORE.            
             IF SR-SCORE < WS-PROBLEM-MIN-SCORE THEN
@@ -171,12 +184,12 @@
             ADD SR-SCORE TO WS-PROBLEM-TOTAL-SCORE
                   GIVING WS-PROBLEM-TOTAL-SCORE.
 
-            *> DISPLAY
-            *>       WS-PROBLEM-BASE-SCORE, " ",
-            *>       WS-PROBLEM-NUM-OF-SUBMISSIONS, " ",
-            *>       WS-PROBLEM-TOTAL-SCORE.
+      *> DISPLAY
+      *>       WS-PROBLEM-BASE-SCORE, " ",
+      *>       WS-PROBLEM-NUM-OF-SUBMISSIONS, " ",
+      *>       WS-PROBLEM-TOTAL-SCORE.
        PROBLEM-POST-PROC.
-            *> DISPLAY "PROBLEM-POST-PROC".
+      *> DISPLAY "PROBLEM-POST-PROC".
 
             ADD 1 TO WS-PROCESSING-PROBLEM-ID
                   GIVING WS-PROCESSING-PROBLEM-ID.
@@ -190,21 +203,21 @@
 
             GO TO SCAN-RECORDS-PROC.
        PROBLEM-SCORE-PRINT-PROC.
-            *> DISPLAY "PROBLEM-SCORE-PRINT-PROC".
+      *> DISPLAY "PROBLEM-SCORE-PRINT-PROC".
 
             MOVE 0 TO WS-PROBLEM-FINAL-SCORE.
             
-            *> DISPLAY
-            *>       "*",
-            *>       WS-PROBLEM-BASE-SCORE, " ",
-            *>       WS-PROBLEM-NUM-OF-SUBMISSIONS, " ",
-            *>       WS-PROBLEM-TOTAL-SCORE, " ",
-            *>       WS-PROBLEM-MAX-SCORE, " "
-            *>       WS-PROBLEM-MIN-SCORE, " "
-            *>       WS-PROBLEM-FINAL-SCORE,
-            *>       "*" NO ADVANCING.
+      *> DISPLAY
+      *>       "*",
+      *>       WS-PROBLEM-BASE-SCORE, " ",
+      *>       WS-PROBLEM-NUM-OF-SUBMISSIONS, " ",
+      *>       WS-PROBLEM-TOTAL-SCORE, " ",
+      *>       WS-PROBLEM-MAX-SCORE, " "
+      *>       WS-PROBLEM-MIN-SCORE, " "
+      *>       WS-PROBLEM-FINAL-SCORE,
+      *>       "*" NO ADVANCING.
             
-            *> base_score
+      *> base_score
             COMPUTE WS-PROBLEM-FINAL-SCORE =
                         WS-PROBLEM-FINAL-SCORE +
                         0.6 *
@@ -215,14 +228,14 @@
                         WS-PROBLEM-NUM-OF-SUBMISSIONS
             END-IF
 
-            *> average_score
+      *> average_score
             COMPUTE WS-PROBLEM-FINAL-SCORE =
                   WS-PROBLEM-FINAL-SCORE +
                   0.3 * 
                   WS-PROBLEM-TOTAL-SCORE / 
                   WS-PROBLEM-NUM-OF-SUBMISSIONS.
 
-            *> robutness_score
+      *> robutness_score
             IF WS-PROBLEM-MAX-SCORE > 30 THEN
                   COMPUTE WS-PROBLEM-FINAL-SCORE = 
                         WS-PROBLEM-FINAL-SCORE +
@@ -232,7 +245,7 @@
                         WS-PROBLEM-MIN-SCORE)
             END-IF.
 
-            *> ADD TO TOTAL
+      *> ADD TO TOTAL
             ADD WS-PROBLEM-FINAL-SCORE TO WS-ALL-PROBLEMS-SCORE
                   GIVING WS-ALL-PROBLEMS-SCORE.
 
@@ -242,34 +255,34 @@
             DISPLAY "Team Score Report".
             DISPLAY "".
 
-            *> OPEN EXTEND NEW-FILE.
-            *> MOVE "2018 CUHK CSE Programming Contest" TO NF-HEADER-DATA
-            *> WRITE NF-HEADER
-            *>       AFTER ADVANCING 1 LINE.
-            *> MOVE "Team Score Report" TO NF-HEADER-DATA
-            *> WRITE NF-HEADER
-            *>       AFTER ADVANCING 1 LINE.
-            *> MOVE " " TO NF-HEADER-DATA
-            *> WRITE NF-HEADER
-            *>       AFTER ADVANCING 1 LINE.
-            *> CLOSE NEW-FILE.
+      *> OPEN EXTEND NEW-FILE.
+      *> MOVE "2018 CUHK CSE Programming Contest" TO NF-HEADER-DATA
+      *> WRITE NF-HEADER
+      *>       AFTER ADVANCING 1 LINE.
+      *> MOVE "Team Score Report" TO NF-HEADER-DATA
+      *> WRITE NF-HEADER
+      *>       AFTER ADVANCING 1 LINE.
+      *> MOVE " " TO NF-HEADER-DATA
+      *> WRITE NF-HEADER
+      *>       AFTER ADVANCING 1 LINE.
+      *> CLOSE NEW-FILE.
        DISPLAY-TEAM-NAME-PROC.
             DISPLAY T-TEAM-NAME NO ADVANCING.
 
-            *> OPEN EXTEND TEAM-NAME-FILE.
-            *> MOVE T-TEAM-NAME TO TNF-TEAM-NAME-DATA.
-            *> WRITE TNF-TEAM-NAME.
-            *> CLOSE TEAM-NAME-FILE.
+      *> OPEN EXTEND TEAM-NAME-FILE.
+      *> MOVE T-TEAM-NAME TO TNF-TEAM-NAME-DATA.
+      *> WRITE TNF-TEAM-NAME.
+      *> CLOSE TEAM-NAME-FILE.
        DISPLAY-PROBLEM-ID-PROC.
             MOVE WS-PROCESSING-PROBLEM-ID TO ONE_NUMBER_STRING.
             DISPLAY "(", ONE_NUMBER_STRING, ")" NO ADVANCING.
 
-            *> OPEN EXTEND PROBLEM-FILE.
-            *> MOVE "(" TO P-LEFT-QUOTE.
-            *> MOVE ONE_NUMBER_STRING TO P-PROBLEM-ID.
-            *> MOVE ")" TO P-RIGHT-QUOTE.
-            *> WRITE P-PROBLEM.
-            *> CLOSE PROBLEM-FILE.
+      *> OPEN EXTEND PROBLEM-FILE.
+      *> MOVE "(" TO P-LEFT-QUOTE.
+      *> MOVE ONE_NUMBER_STRING TO P-PROBLEM-ID.
+      *> MOVE ")" TO P-RIGHT-QUOTE.
+      *> WRITE P-PROBLEM.
+      *> CLOSE PROBLEM-FILE.
        DISPLAY-PROBLEM-SCORE-PROC.
             IF WS-PROBLEM-FINAL-SCORE = 0 THEN
                   DISPLAY "  0 " NO ADVANCING

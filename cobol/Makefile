@@ -1,3 +1,3 @@
-all: main
-main: main.cbl
-	cobc -x -o main $^
+all: contest
+contest: contest.cob
+	cobc -x -o contest $^
