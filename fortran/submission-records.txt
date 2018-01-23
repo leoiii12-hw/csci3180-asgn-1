@@ -1,0 +1,20 @@
+AC_Chain       0Accepted           100
+AC_Chain       1Wrong_Answer       080
+AC_Chain       1Wrong_Answer       090
+AC_Chain       2Compile Error      000
+AC_Chain       2Time Limit Exceeded070
+AC_Chain       2Wrong_Answer       000
+HelloWorld     0Runtime Error      000
+HelloWorld     0Runtime Error      000
+HelloWorld     0Runtime Error      040
+HelloWorld     0Compile Error      000
+HelloWorld     1Runtime Error      010
+HelloWorld     1Accepted           100
+HelloWorld     2Wrong_Answer       030
+HelloWorld     2Compile Error      000
+Splash         0Compile Error      000
+Splash         0Wrong_Answer       030
+Splash         0Wrong_Answer       060
+Splash         1Wrong_Answer       040
+Splash         1Time Limit Exceeded000
+Splash         1Accepted           100
