@@ -23,27 +23,32 @@
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
-            *> INPUT
+            *>  INPUT
             SELECT T-FILE ASSIGN TO 'teams.txt'
               ORGANIZATION IS LINE SEQUENTIAL.
             SELECT SR-FILE ASSIGN TO 'submission-records.txt'
               ORGANIZATION IS LINE SEQUENTIAL.
             
-            *> OUTPUT
+            *>  OUTPUT
             SELECT NEW-FILE ASSIGN TO 'reportcob.txt'
+              ORGANIZATION IS SEQUENTIAL.
+            SELECT CONTEST-HEADER-FILE ASSIGN TO 'reportcob.txt'
+              ORGANIZATION IS SEQUENTIAL.
+            SELECT CONTEST-TSR-FILE ASSIGN TO 'reportcob.txt'
               ORGANIZATION IS SEQUENTIAL.
             SELECT TEAM-NAME-FILE ASSIGN TO 'reportcob.txt'
               ORGANIZATION IS SEQUENTIAL.
-            SELECT PROBLEM-FILE ASSIGN TO 'reportcob.txt'
+            SELECT PROBLEM-ID-FILE ASSIGN TO 'reportcob.txt'
               ORGANIZATION IS SEQUENTIAL.
-            SELECT SCORE-FILE ASSIGN TO 'reportcob.txt'
+            SELECT PROBLEM-SCORE-FILE ASSIGN TO 'reportcob.txt'
               ORGANIZATION IS SEQUENTIAL.
-      *> SELECT FINAL-SCORE-FILE ASSIGN TO 'reportcob.txt'
-      *>   ORGANIZATION IS SEQUENTIAL.
+            SELECT PFS-FILE ASSIGN TO 'reportcob.txt'
+              ORGANIZATION IS SEQUENTIAL.
 
        DATA DIVISION.
        FILE SECTION.
-      *>  INPUT
+
+       *>  INPUT
        FD T-FILE.
        01 TEAMS.
             02 TEAM-NAME PIC X(15).
@@ -53,23 +58,31 @@
             04 PROBLEM-ID PIC 9(1).
             04 OUTCOME PIC X(19).
             04 SCORE PIC 9(3).
-      *> OUTPUT
-       FD NEW-FILE.
-       01 NF-HEADER.
-            02 NF-HEADER-DATA PIC X(100).
+
+       *>  OUTPUT
+       FD CONTEST-HEADER-FILE.
+       01 CF-HEADER.
+            02 CF-HEADER-DATA PIC X(33).
+       FD CONTEST-TSR-FILE.
+       01 TSRF-HEADER.
+            02 TSRF-HEADER-DATA PIC X(17).
        FD TEAM-NAME-FILE.
        01 TNF-TEAM-NAME.
             02 TNF-TEAM-NAME-DATA PIC X(15).
-       FD PROBLEM-FILE.      
-       01 P-PROBLEM.
-            03 P-LEFT-QUOTE PIC X(1).
-            03 P-PROBLEM-ID PIC X(1).
-            03 P-RIGHT-QUOTE PIC X(1).
-       FD SCORE-FILE.      
-       01 S-PROBLEM.
-            03 S-SCORE PIC X(3).
-            03 S-SPACE PIC X(1).
-
+       FD PROBLEM-ID-FILE.      
+       01 PIF-PROBLEM.
+            03 PIF-LEFT-QUOTE PIC X(1).
+            03 PIF-PROBLEM-ID PIC X(1).
+            03 PIF-RIGHT-QUOTE PIC X(1).
+       FD PROBLEM-SCORE-FILE.      
+       01 PSF-SCORE.
+            02 PSF-SCORE-DATA PIC X(3).
+            02 PSF-SPACE PIC X(1).
+       FD PFS-FILE.      
+       01 PFSF-SCORE.
+            02 PFSF-T PIC X(2) VALUE SPACE.
+            02 PFSF-SCORE-DATA PIC X(4) VALUE SPACE.
+            
 
        WORKING-STORAGE SECTION.
        01 WS-TEAM.
@@ -109,7 +122,7 @@
             OPEN OUTPUT NEW-FILE.
             CLOSE NEW-FILE.
        RESET-ALL-VARIABLES-PROC.
-      *> DISPLAY "RESET-ALL-VARIABLES-PROC".
+            *> DISPLAY "RESET-ALL-VARIABLES-PROC".
             MOVE 0 TO WS-PROCESSING-PROBLEM-ID.
 
             PERFORM RESET-PROBLEM-VARIABLES-PROC.
@@ -123,14 +136,14 @@
             MOVE 0 TO WS-PROBLEM-NUM-OF-SUBMISSIONS.
             MOVE 0 TO WS-PROBLEM-TOTAL-SCORE.
        END-PROC.
-      *> DISPLAY "END-PROC".
+            *> DISPLAY "END-PROC".
 
             CLOSE T-FILE.
             CLOSE SR-FILE.     
 
             STOP RUN.
        TEAM-PROC.
-      *> DISPLAY "TEAM-PROC".
+            *> DISPLAY "TEAM-PROC".
 
             PERFORM RESET-ALL-VARIABLES-PROC.
 
@@ -142,9 +155,9 @@
 
             GO TO SCAN-RECORDS-PROC.
        SCAN-RECORDS-PROC.
-      *> DISPLAY "SCAN-RECORDS-PROC".
+            *> DISPLAY "SCAN-RECORDS-PROC".
       
-      *> RESET SR-FILE
+            *> RESET SR-FILE
             CLOSE SR-FILE.
             OPEN INPUT SR-FILE.
 
@@ -154,7 +167,7 @@
 
             GO TO SCAN-RECORDS-LOOP-PROC.
        SCAN-RECORDS-LOOP-PROC.
-      *> DISPLAY "SCAN-RECORDS-LOOP-PROC".
+            *> DISPLAY "SCAN-RECORDS-LOOP-PROC".
        
             READ SR-FILE INTO WS-SUBMISSION-RECORD
                   AT END GO TO PROBLEM-POST-PROC
@@ -168,7 +181,7 @@
 
             GO TO SCAN-RECORDS-LOOP-PROC.
        SCAN-RECORDS-ACTION-PROC.
-      *> DISPLAY "SCAN-RECORDS-ACTION-PROC".
+            *> DISPLAY "SCAN-RECORDS-ACTION-PROC".
 
             MOVE SR-SCORE TO WS-PROBLEM-BASE-SCORE.            
             IF SR-SCORE < WS-PROBLEM-MIN-SCORE THEN
@@ -184,12 +197,12 @@
             ADD SR-SCORE TO WS-PROBLEM-TOTAL-SCORE
                   GIVING WS-PROBLEM-TOTAL-SCORE.
 
-      *> DISPLAY
-      *>       WS-PROBLEM-BASE-SCORE, " ",
-      *>       WS-PROBLEM-NUM-OF-SUBMISSIONS, " ",
-      *>       WS-PROBLEM-TOTAL-SCORE.
+            *> DISPLAY
+            *>       WS-PROBLEM-BASE-SCORE, " ",
+            *>       WS-PROBLEM-NUM-OF-SUBMISSIONS, " ",
+            *>       WS-PROBLEM-TOTAL-SCORE.
        PROBLEM-POST-PROC.
-      *> DISPLAY "PROBLEM-POST-PROC".
+            *> DISPLAY "PROBLEM-POST-PROC".
 
             ADD 1 TO WS-PROCESSING-PROBLEM-ID
                   GIVING WS-PROCESSING-PROBLEM-ID.
@@ -203,21 +216,21 @@
 
             GO TO SCAN-RECORDS-PROC.
        PROBLEM-SCORE-PRINT-PROC.
-      *> DISPLAY "PROBLEM-SCORE-PRINT-PROC".
+            *> DISPLAY "PROBLEM-SCORE-PRINT-PROC".
 
             MOVE 0 TO WS-PROBLEM-FINAL-SCORE.
             
-      *> DISPLAY
-      *>       "*",
-      *>       WS-PROBLEM-BASE-SCORE, " ",
-      *>       WS-PROBLEM-NUM-OF-SUBMISSIONS, " ",
-      *>       WS-PROBLEM-TOTAL-SCORE, " ",
-      *>       WS-PROBLEM-MAX-SCORE, " "
-      *>       WS-PROBLEM-MIN-SCORE, " "
-      *>       WS-PROBLEM-FINAL-SCORE,
-      *>       "*" NO ADVANCING.
+            *> DISPLAY
+            *>       "*",
+            *>       WS-PROBLEM-BASE-SCORE, " ",
+            *>       WS-PROBLEM-NUM-OF-SUBMISSIONS, " ",
+            *>       WS-PROBLEM-TOTAL-SCORE, " ",
+            *>       WS-PROBLEM-MAX-SCORE, " "
+            *>       WS-PROBLEM-MIN-SCORE, " "
+            *>       WS-PROBLEM-FINAL-SCORE,
+            *>       "*" NO ADVANCING.
             
-      *> base_score
+            *> base_score
             COMPUTE WS-PROBLEM-FINAL-SCORE =
                         WS-PROBLEM-FINAL-SCORE +
                         0.6 *
@@ -228,14 +241,14 @@
                         WS-PROBLEM-NUM-OF-SUBMISSIONS
             END-IF
 
-      *> average_score
+            *> average_score
             COMPUTE WS-PROBLEM-FINAL-SCORE =
                   WS-PROBLEM-FINAL-SCORE +
                   0.3 * 
                   WS-PROBLEM-TOTAL-SCORE / 
                   WS-PROBLEM-NUM-OF-SUBMISSIONS.
 
-      *> robutness_score
+            *> robutness_score
             IF WS-PROBLEM-MAX-SCORE > 30 THEN
                   COMPUTE WS-PROBLEM-FINAL-SCORE = 
                         WS-PROBLEM-FINAL-SCORE +
@@ -245,63 +258,84 @@
                         WS-PROBLEM-MIN-SCORE)
             END-IF.
 
-      *> ADD TO TOTAL
+            *> ADD TO TOTAL
             ADD WS-PROBLEM-FINAL-SCORE TO WS-ALL-PROBLEMS-SCORE
                   GIVING WS-ALL-PROBLEMS-SCORE.
 
             PERFORM DISPLAY-PROBLEM-SCORE-PROC.
        DISPLAY-HEADER-PROC.
-            DISPLAY "2018 CUHK CSE Programming Contest".
-            DISPLAY "Team Score Report".
-            DISPLAY "".
+            OPEN EXTEND CONTEST-HEADER-FILE.
+            MOVE "2018 CUHK CSE Programming Contest" TO CF-HEADER-DATA
+            WRITE CF-HEADER BEFORE ADVANCING 1 LINE.
+            CLOSE CONTEST-HEADER-FILE.
 
-      *> OPEN EXTEND NEW-FILE.
-      *> MOVE "2018 CUHK CSE Programming Contest" TO NF-HEADER-DATA
-      *> WRITE NF-HEADER
-      *>       AFTER ADVANCING 1 LINE.
-      *> MOVE "Team Score Report" TO NF-HEADER-DATA
-      *> WRITE NF-HEADER
-      *>       AFTER ADVANCING 1 LINE.
-      *> MOVE " " TO NF-HEADER-DATA
-      *> WRITE NF-HEADER
-      *>       AFTER ADVANCING 1 LINE.
-      *> CLOSE NEW-FILE.
+            OPEN EXTEND CONTEST-TSR-FILE.
+            MOVE "Team Score Report" TO TSRF-HEADER-DATA
+            WRITE TSRF-HEADER BEFORE ADVANCING 2 LINE.
+            CLOSE CONTEST-TSR-FILE.
        DISPLAY-TEAM-NAME-PROC.
-            DISPLAY T-TEAM-NAME NO ADVANCING.
+            *> DISPLAY T-TEAM-NAME NO ADVANCING.
 
-      *> OPEN EXTEND TEAM-NAME-FILE.
-      *> MOVE T-TEAM-NAME TO TNF-TEAM-NAME-DATA.
-      *> WRITE TNF-TEAM-NAME.
-      *> CLOSE TEAM-NAME-FILE.
+            OPEN EXTEND TEAM-NAME-FILE.
+            MOVE T-TEAM-NAME TO TNF-TEAM-NAME-DATA.
+            WRITE TNF-TEAM-NAME.
+            CLOSE TEAM-NAME-FILE.
        DISPLAY-PROBLEM-ID-PROC.
             MOVE WS-PROCESSING-PROBLEM-ID TO ONE_NUMBER_STRING.
-            DISPLAY "(", ONE_NUMBER_STRING, ")" NO ADVANCING.
 
-      *> OPEN EXTEND PROBLEM-FILE.
-      *> MOVE "(" TO P-LEFT-QUOTE.
-      *> MOVE ONE_NUMBER_STRING TO P-PROBLEM-ID.
-      *> MOVE ")" TO P-RIGHT-QUOTE.
-      *> WRITE P-PROBLEM.
-      *> CLOSE PROBLEM-FILE.
+            *> DISPLAY "(", ONE_NUMBER_STRING, ")" NO ADVANCING.
+
+            OPEN EXTEND PROBLEM-ID-FILE.
+            MOVE "(" TO PIF-LEFT-QUOTE.
+            MOVE ONE_NUMBER_STRING TO PIF-PROBLEM-ID.
+            MOVE ")" TO PIF-RIGHT-QUOTE.
+            WRITE PIF-PROBLEM.
+            CLOSE PROBLEM-ID-FILE.
        DISPLAY-PROBLEM-SCORE-PROC.
             IF WS-PROBLEM-FINAL-SCORE = 0 THEN
-                  DISPLAY "  0 " NO ADVANCING
+                  *> DISPLAY "  0 " NO ADVANCING
+                  
+                  OPEN EXTEND PROBLEM-SCORE-FILE
+                  MOVE "  0" TO PSF-SCORE-DATA
+                  MOVE " " TO PSF-SPACE
+                  WRITE PSF-SCORE
+                  CLOSE PROBLEM-SCORE-FILE
             END-IF.
             
             IF WS-PROBLEM-FINAL-SCORE > 0 THEN
                   MOVE WS-PROBLEM-FINAL-SCORE TO THREE_STRING
                   INSPECT THREE_STRING REPLACING LEADING "0" BY " "
-                  DISPLAY THREE_STRING, " " NO ADVANCING
+
+                  *> DISPLAY THREE_STRING, " " NO ADVANCING
+
+                  OPEN EXTEND PROBLEM-SCORE-FILE
+                  MOVE THREE_STRING TO PSF-SCORE-DATA
+                  MOVE " " TO PSF-SPACE
+                  WRITE PSF-SCORE
+                  CLOSE PROBLEM-SCORE-FILE
             END-IF.
        DISPLAY-TEAM-SCORE-PROC.
-            DISPLAY "T:" NO ADVANCING.
+            *> DISPLAY "T:" NO ADVANCING.
 
             IF WS-ALL-PROBLEMS-SCORE = 0 THEN
-                  DISPLAY "   0"
+                  *> DISPLAY "   0"
+                  
+                  OPEN EXTEND PFS-FILE
+                  MOVE "T:" TO PFSF-T
+                  MOVE "   0" TO PFSF-SCORE-DATA                  
+                  WRITE PFSF-SCORE BEFORE ADVANCING 1 LINE
+                  CLOSE PFS-FILE
             END-IF.
             IF WS-ALL-PROBLEMS-SCORE > 0 THEN
                   MOVE WS-ALL-PROBLEMS-SCORE TO FOUR_STRING
                   INSPECT FOUR_STRING REPLACING LEADING "0" BY " "
-                  DISPLAY FOUR_STRING, " "
+
+                  *> DISPLAY FOUR_STRING, " "
+                  
+                  OPEN EXTEND PFS-FILE
+                  MOVE "T:" TO PFSF-T
+                  MOVE FOUR_STRING TO PFSF-SCORE-DATA                  
+                  WRITE PFSF-SCORE BEFORE ADVANCING 1 LINE
+                  CLOSE PFS-FILE                  
             END-IF.
        END PROGRAM YOUR-PROGRAM-NAME.
