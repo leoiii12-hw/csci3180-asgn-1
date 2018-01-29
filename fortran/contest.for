@@ -19,26 +19,45 @@
        program your_program_name
        implicit none
 
+       integer iostat
+
        character*15 tTeam
 
-       open(unit=11, file="teams.txt", status="old")
-       open(unit=20, file="reportcob.txt", status="unknown")
+       character teamsFile*255
+       call GETARG(1,teamsFile)
 
-50     format("2018 CUHK CSE Programming Contest")
-51     format("Team Score Report")
-52     format("")
+       open(unit=11, file=teamsFile, status="old")
+       open(unit=20, file="reportfor.txt", status="unknown")
+
+50     format("2018 CUHK CSE Programming Contest\r")
+51     format("Team Score Report\r")
+52     format("\r")
        write(unit=20, fmt=50)
        write(unit=20, fmt=51)
        write(unit=20, fmt=52)
 
-10     read(unit=11, *, end=30) tTeam
+!      loop start
+
+15     format(A15, $)
+10     read(unit=11, fmt=15, iostat=iostat) tTeam
+
+       if (index(tTeam, "\r") .gt. 0) then
+              tTeam = tTeam(1:index(tTeam, "\r") - 1)
+       endif
 
 20     format(A15, $)
-       write (unit=20, fmt=20) tTeam
+       write(unit=20, fmt=20) tTeam
 
        call processTeam(tTeam)
 
+       if (iostat .ne. 0) then
+              goto 30
+       endif
+
+       tTeam = "               "
        goto 10
+
+!      loop end
 
 30     close(unit=11)
        close(unit=20)
@@ -75,8 +94,8 @@
 
        goto 10
 
-20     format(A2, I4)
-30     write (unit=20, fmt=20) "T:", int(tScore)
+20     format(A2, I4, A1)
+30     write (unit=20, fmt=20) "T:", int(tScore), "\r"
 
        end
 
@@ -105,6 +124,9 @@
 
        real score
 
+       character srFile*255
+       call GETARG(2,srFile)
+
        pNSubs = 0
        pTotal = 0
 
@@ -114,7 +136,7 @@
        pMax = 0
        pBase = 0
 
-       open(unit=12, file="submission-records.txt", status="old")
+       open(unit=12, file=srFile, status="old")
 
 10     format(A15, I1, A19, I3)
 20     read(unit=12, fmt=10, iostat=iostat) srTeam, srPid, srOc, srScor

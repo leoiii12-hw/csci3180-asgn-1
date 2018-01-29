@@ -30,6 +30,9 @@
               ORGANIZATION IS LINE SEQUENTIAL.
             
             *>  OUTPUT
+            SELECT NEW-LINE-FILE ASSIGN TO 'reportcob.txt'
+              ORGANIZATION IS SEQUENTIAL.
+
             SELECT NEW-FILE ASSIGN TO 'reportcob.txt'
               ORGANIZATION IS SEQUENTIAL.
             SELECT CONTEST-HEADER-FILE ASSIGN TO 'reportcob.txt'
@@ -44,6 +47,7 @@
               ORGANIZATION IS SEQUENTIAL.
             SELECT PFS-FILE ASSIGN TO 'reportcob.txt'
               ORGANIZATION IS SEQUENTIAL.
+            
 
        DATA DIVISION.
        FILE SECTION.
@@ -60,6 +64,11 @@
             04 SCORE PIC 9(3).
 
        *>  OUTPUT
+       FD NEW-LINE-FILE.
+       01 NLF-NEW-LINE.
+            02 CARRIAGE-RETURN PIC X.
+            02 LINE-FEED PIC X.
+
        FD CONTEST-HEADER-FILE.
        01 CF-HEADER.
             02 CF-HEADER-DATA PIC X(33).
@@ -266,13 +275,18 @@
        DISPLAY-HEADER-PROC.
             OPEN EXTEND CONTEST-HEADER-FILE.
             MOVE "2018 CUHK CSE Programming Contest" TO CF-HEADER-DATA
-            WRITE CF-HEADER BEFORE ADVANCING 1 LINE.
+            WRITE CF-HEADER.
             CLOSE CONTEST-HEADER-FILE.
+
+            PERFORM DISPLAY-NEW-LINE-PROC.
 
             OPEN EXTEND CONTEST-TSR-FILE.
             MOVE "Team Score Report" TO TSRF-HEADER-DATA
-            WRITE TSRF-HEADER BEFORE ADVANCING 2 LINE.
+            WRITE TSRF-HEADER.
             CLOSE CONTEST-TSR-FILE.
+
+            PERFORM DISPLAY-NEW-LINE-PROC.
+            PERFORM DISPLAY-NEW-LINE-PROC.
        DISPLAY-TEAM-NAME-PROC.
             *> DISPLAY T-TEAM-NAME NO ADVANCING.
 
@@ -301,7 +315,7 @@
                   WRITE PSF-SCORE
                   CLOSE PROBLEM-SCORE-FILE
             END-IF.
-            
+
             IF WS-PROBLEM-FINAL-SCORE > 0 THEN
                   MOVE WS-PROBLEM-FINAL-SCORE TO THREE_STRING
                   INSPECT THREE_STRING REPLACING LEADING "0" BY " "
@@ -322,9 +336,11 @@
                   
                   OPEN EXTEND PFS-FILE
                   MOVE "T:" TO PFSF-T
-                  MOVE "   0" TO PFSF-SCORE-DATA                  
-                  WRITE PFSF-SCORE BEFORE ADVANCING 1 LINE
+                  MOVE "   0" TO PFSF-SCORE-DATA       
+                  WRITE PFSF-SCORE
                   CLOSE PFS-FILE
+
+                  PERFORM DISPLAY-NEW-LINE-PROC
             END-IF.
             IF WS-ALL-PROBLEMS-SCORE > 0 THEN
                   MOVE WS-ALL-PROBLEMS-SCORE TO FOUR_STRING
@@ -334,8 +350,16 @@
                   
                   OPEN EXTEND PFS-FILE
                   MOVE "T:" TO PFSF-T
-                  MOVE FOUR_STRING TO PFSF-SCORE-DATA                  
-                  WRITE PFSF-SCORE BEFORE ADVANCING 1 LINE
-                  CLOSE PFS-FILE                  
+                  MOVE FOUR_STRING TO PFSF-SCORE-DATA
+                  WRITE PFSF-SCORE
+                  CLOSE PFS-FILE
+
+                  PERFORM DISPLAY-NEW-LINE-PROC          
             END-IF.
+       DISPLAY-NEW-LINE-PROC.
+            OPEN EXTEND NEW-LINE-FILE.
+            MOVE X'0D' TO CARRIAGE-RETURN.
+            MOVE X'0A' TO LINE-FEED.
+            WRITE NLF-NEW-LINE.
+            CLOSE NEW-LINE-FILE.
        END PROGRAM YOUR-PROGRAM-NAME.

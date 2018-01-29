@@ -2,3 +2,7 @@ cobol/contest
 cobol/reportcob.txt
 fortran/contest
 fortran/reportcob.txt
+contest.exe
+reportfor.txt
+fortran/.idea
+fortran/cmake-build-debug
