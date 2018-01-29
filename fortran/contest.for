@@ -75,7 +75,7 @@
        integer curPId
 
        real curPSco
-       real tScore
+       integer tScore
 
        curPId = 0
 
@@ -183,8 +183,10 @@
 
        endif
 
+       score = int(score)
+
 40     format(A1, I1, A1, I3, A1, $)
-       write (unit=20, fmt=40) "(", curPId, ")", int(score), " "
+       write (unit=20, fmt=40) "(", curPId, ")", int(score) , " "
 
        close(unit=12)
 
