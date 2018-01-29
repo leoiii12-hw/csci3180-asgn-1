@@ -110,6 +110,10 @@
        01 WS-PROBLEM-NUM-OF-SUBMISSIONS PIC 9(3).
        01 WS-PROBLEM-TOTAL-SCORE PIC 9(3).
 
+       01 WS-PROBLEM-B-SCORE PIC 9(3)V9(2).
+       01 WS-PROBLEM-DECAY PIC 9(3)V9(2).
+       01 WS-PROBLEM-R-SCORE PIC 9(3)V9(2).
+
        01 WS-PROBLEM-FINAL-SCORE PIC 9(3).
        01 WS-ALL-PROBLEMS-SCORE PIC 9(4).
 
@@ -144,6 +148,10 @@
             MOVE 0 TO WS-PROBLEM-BASE-SCORE.
             MOVE 0 TO WS-PROBLEM-NUM-OF-SUBMISSIONS.
             MOVE 0 TO WS-PROBLEM-TOTAL-SCORE.
+
+            MOVE 0 TO WS-PROBLEM-B-SCORE.
+            MOVE 0 TO WS-PROBLEM-DECAY.
+            MOVE 0 TO WS-PROBLEM-R-SCORE.
        END-PROC.
             *> DISPLAY "END-PROC".
 
@@ -238,40 +246,40 @@
             *>       WS-PROBLEM-MIN-SCORE, " "
             *>       WS-PROBLEM-FINAL-SCORE,
             *>       "*" NO ADVANCING.
-            
-            *> base_score
-            COMPUTE WS-PROBLEM-FINAL-SCORE =
-                        WS-PROBLEM-FINAL-SCORE +
-                        0.6 *
-                        WS-PROBLEM-BASE-SCORE
-            IF WS-PROBLEM-BASE-SCORE < 100 THEN
+
+            IF (WS-PROBLEM-MAX-SCORE > 0) THEN
+                  MOVE WS-PROBLEM-BASE-SCORE TO WS-PROBLEM-B-SCORE
+
+                  IF (WS-PROBLEM-BASE-SCORE = 100) THEN
+                        MOVE 1.0 TO WS-PROBLEM-DECAY
+                  END-IF
+                  IF (WS-PROBLEM-BASE-SCORE < 100) THEN
+                        COMPUTE WS-PROBLEM-DECAY =
+                              1.0 / WS-PROBLEM-NUM-OF-SUBMISSIONS
+                  END-IF
+
+                  IF (WS-PROBLEM-MAX-SCORE <= 30) THEN
+                        MOVE 0 TO WS-PROBLEM-R-SCORE
+                  END-IF
+                  IF (WS-PROBLEM-MAX-SCORE > 30) THEN
+                        COMPUTE WS-PROBLEM-R-SCORE =
+                              100 -
+                              WS-PROBLEM-MAX-SCORE +
+                              WS-PROBLEM-MIN-SCORE
+                  END-IF
+
                   COMPUTE WS-PROBLEM-FINAL-SCORE =
-                        WS-PROBLEM-FINAL-SCORE / 
-                        WS-PROBLEM-NUM-OF-SUBMISSIONS
-            END-IF
-
-            *> average_score
-            COMPUTE WS-PROBLEM-FINAL-SCORE =
-                  WS-PROBLEM-FINAL-SCORE +
-                  0.3 * 
-                  WS-PROBLEM-TOTAL-SCORE / 
-                  WS-PROBLEM-NUM-OF-SUBMISSIONS.
-
-            *> robutness_score
-            IF WS-PROBLEM-MAX-SCORE > 30 THEN
-                  COMPUTE WS-PROBLEM-FINAL-SCORE = 
-                        WS-PROBLEM-FINAL-SCORE +
-                        0.1 *
-                        (100 - 
-                        WS-PROBLEM-MAX-SCORE + 
-                        WS-PROBLEM-MIN-SCORE)
+                        0.6*WS-PROBLEM-B-SCORE*WS-PROBLEM-DECAY+
+                        0.3*WS-PROBLEM-TOTAL-SCORE/
+                        WS-PROBLEM-NUM-OF-SUBMISSIONS+
+                        0.1*WS-PROBLEM-R-SCORE
             END-IF.
+
+            PERFORM DISPLAY-PROBLEM-SCORE-PROC.            
 
             *> ADD TO TOTAL
             ADD WS-PROBLEM-FINAL-SCORE TO WS-ALL-PROBLEMS-SCORE
                   GIVING WS-ALL-PROBLEMS-SCORE.
-
-            PERFORM DISPLAY-PROBLEM-SCORE-PROC.
        DISPLAY-HEADER-PROC.
             OPEN EXTEND CONTEST-HEADER-FILE.
             MOVE "2018 CUHK CSE Programming Contest" TO CF-HEADER-DATA
