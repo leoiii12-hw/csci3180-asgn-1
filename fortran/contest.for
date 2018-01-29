@@ -105,10 +105,11 @@
        subroutine processProblem(tTeam, curPId, score)
        implicit none
 
+       integer iostat
+
        character*15 tTeam
        integer curPid
-
-       integer iostat
+       real score
 
        character*15 srTeam
        integer srPId
@@ -122,19 +123,21 @@
        integer pNSubs
        integer pTotal
 
-       real score
+       real bScore
+       real decay
+       real rScore
 
        character srFile*255
        call GETARG(2,srFile)
-
-       pNSubs = 0
-       pTotal = 0
 
        score = 0
 
        pMin = 100
        pMax = 0
        pBase = 0
+
+       pNSubs = 0
+       pTotal = 0
 
        open(unit=12, file=srFile, status="old")
 
@@ -168,19 +171,24 @@
 30     score = 0
 
        if (pMax .gt. 0) then
+              bScore = pBase
 
-              score = score + 0.6 * pBase
-
-              if (pBase < 100) then
-                     score = score / pNSubs
+              if (pBase .eq. 100) then
+                     decay = 1
+              endif
+              if (pBase .lt. 100) then
+                     decay = int(100.0/pNSubs)
+                     decay = decay/100.0
               endif
 
-              score = score + 0.3 * pTotal / pNSubs
-
-              if (pMax > 30) then
-                     score = score + 0.1 * (100 - pMax + pMin)
+              if (pMax .le. 30) then
+                     rScore = 0
+              endif
+              if (pMax .gt. 30) then
+                     rScore = 100-(pMax-pMin)
               endif
 
+              score = 0.6*bScore*decay+0.3*pTotal/pNSubs+0.1*rScore
        endif
 
        score = int(score)
