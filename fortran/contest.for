@@ -41,6 +41,10 @@
 15     format(A15, $)
 10     read(unit=11, fmt=15, iostat=iostat) tTeam
 
+       if (iostat .ne. 0) then
+              goto 30
+       endif
+
        if (index(tTeam, "\r") .gt. 0) then
               tTeam = tTeam(1:index(tTeam, "\r") - 1)
        endif
@@ -49,10 +53,6 @@
        write(unit=20, fmt=20) tTeam
 
        call processTeam(tTeam)
-
-       if (iostat .ne. 0) then
-              goto 30
-       endif
 
        tTeam = "               "
        goto 10
@@ -144,6 +144,10 @@
 10     format(A15, I1, A19, I3)
 20     read(unit=12, fmt=10, iostat=iostat) srTeam, srPid, srOc, srScor
 
+       if (iostat .ne. 0) then
+              goto 30
+       endif
+
        if (tTeam .eq. srTeam) then
               if (srPId .eq. curPId) then
                      pBase = srScor
@@ -158,10 +162,6 @@
                      pNSubs = pNSubs + 1
                      pTotal = pTotal + srScor
               endif
-       endif
-
-       if (iostat .ne. 0) then
-              goto 30
        endif
 
        goto 20
