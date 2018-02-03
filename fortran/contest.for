@@ -20,13 +20,22 @@
        implicit none
 
        integer iostat
+       integer i
 
        character*15 tTeam
+       integer srProcessed
 
-       character teamsFile*255
-       call GETARG(1,teamsFile)
+       character*255 tFileN
+       character*255 srFileN
 
-       open(unit=11, file=teamsFile, status="old")
+       srProcessed = 1
+
+       call GETARG(1,tFileN)
+       call GETARG(2,srFileN)
+
+       open(unit=11, file=tFileN, status="old")
+       open(unit=12, file=srFileN, status="old")
+
        open(unit=20, file="reportfor.txt", status="unknown")
 
 50     format("2018 CUHK CSE Programming Contest\r")
@@ -52,14 +61,17 @@
 20     format(A15, $)
        write(unit=20, fmt=20) tTeam
 
-       call processTeam(tTeam)
+       call processTeam(tTeam, srProcessed)
 
        tTeam = "               "
+       i = i + 1
+
        goto 10
 
 !      loop end
 
 30     close(unit=11)
+       close(unit=12)
        close(unit=20)
 
        end
@@ -67,136 +79,190 @@
 
 
 !      processTeam
-       subroutine processTeam(tTeam)
+       subroutine processTeam(tTeam, srProcessed)
        implicit none
 
        character*15 tTeam
-
-       integer curPId
-
-       real curPSco
-       integer tScore
-
-       curPId = 0
-
-       curPSco = 0
-       tScore = 0
-
-10     call processProblem(tTeam, curPId, curPSco)
-
-       tScore = tScore + curPSco
-
-       if (curPId .eq. 9) then
-              goto 30
-       endif
-
-       curPId = curPId + 1
-
-       goto 10
-
-20     format(A2, I4, A1)
-30     write (unit=20, fmt=20) "T:", int(tScore), "\r"
-
-       end
-
-
-
-!      processProblem
-       subroutine processProblem(tTeam, curPId, score)
-       implicit none
+       integer srProcessed
 
        integer iostat
-
-       character*15 tTeam
-       integer curPid
-       real score
 
        character*15 srTeam
        integer srPId
        character*19 srOC
        integer srScor
 
-       integer pMin
-       integer pMax
-       integer pBase
 
-       integer pNSubs
-       integer pTotal
+       integer pMin(10)
+       integer pMax(10)
+       integer pBase(10)
+       integer pNSubs(10)
+       integer pTotal(10)
+       integer i
 
        real bScore
        real decay
        real rScore
 
-       character srFile*255
-       call GETARG(2,srFile)
+       integer curPId
+       integer curPSco
 
-       score = 0
+       integer allPSco
 
-       pMin = 100
-       pMax = 0
-       pBase = 0
-
-       pNSubs = 0
-       pTotal = 0
-
-       open(unit=12, file=srFile, status="old")
+       call resetTeamVariables(
+     +        pMin, pMax, pBase, pNSubs, pTotal,
+     +        allPSco)
 
 10     format(A15, I1, A19, I3)
-20     read(unit=12, fmt=10, iostat=iostat) srTeam, srPid, srOc, srScor
+20     if (srProcessed .eq. 1) then
+              read(unit=12, fmt=10, iostat=iostat)
+     +               srTeam, srPid, srOc, srScor
+              srProcessed = 0
+       endif
+
+       if (tTeam .ne. srTeam) then
+              goto 30
+       endif
 
        if (iostat .ne. 0) then
               goto 30
        endif
-
+       
+       i = srPid + 1
        if (tTeam .eq. srTeam) then
-              if (srPId .eq. curPId) then
-                     pBase = srScor
+              pBase(i) = srScor
 
-                     if (srScor .lt. pMin) then
-                            pMin = srScor
-                     endif
-                     if (srScor .gt. pMax) then
-                            pMax = srScor
-                     endif
-
-                     pNSubs = pNSubs + 1
-                     pTotal = pTotal + srScor
+              if (srScor .lt. pMin(i)) then
+                     pMin(i) = srScor
               endif
+              if (srScor .gt. pMax(i)) then
+                     pMax(i) = srScor
+              endif
+
+              pNSubs(i) =
+     +               pNSubs(i) + 1
+              pTotal(i) =
+     +               pTotal(i) + srScor
        endif
+       srProcessed = 1
 
        goto 20
 
 !      Calculate the problem score
+30     curPId = 0
 
-30     score = 0
+40     i = curPId + 1
 
-       if (pMax .gt. 0) then
-              bScore = pBase
+       curPSco = 0
+       if (pMax(i) .gt. 0) then
+              bScore = pBase(i)
 
-              if (pBase .eq. 100) then
+              if (pBase(i) .eq. 100) then
                      decay = 1
               endif
-              if (pBase .lt. 100) then
-                     decay = int(100.0/pNSubs)
+              if (pBase(i) .lt. 100) then
+                     decay = int(100.0/pNSubs(i))
                      decay = decay/100.0
               endif
 
-              if (pMax .le. 30) then
+              if (pMax(i) .le. 30) then
                      rScore = 0
               endif
-              if (pMax .gt. 30) then
-                     rScore = 100-(pMax-pMin)
+              if (pMax(i) .gt. 30) then
+                     rScore = 100-(pMax(i)-pMin(i))
               endif
 
-              score = 0.6*bScore*decay+0.3*pTotal/pNSubs+0.1*rScore
+              curPSco = 0.6*bScore*decay+
+     +        0.3*pTotal(i)/pNSubs(i)+
+     +        0.1*rScore
        endif
 
-       score = int(score)
+       curPSco = int(curPSco)
+       allPSco = allPSco + curPSco
 
-40     format(A1, I1, A1, I3, A1, $)
-       write (unit=20, fmt=40) "(", curPId, ")", int(score) , " "
+50     format(A1, I1, A1, I3, A1, $)
+       write (unit=20, fmt=50) "(", curPId, ")", int(curPSco) , " "
 
-       close(unit=12)
+       curPId = curPId+1
+       if (curPId .lt. 10) then
+              goto 40
+       endif
+
+60     format(A2, I4, A1)
+       write (unit=20, fmt=60) "T:", int(allPSco), "\r"
 
        end
 
+
+!      processTeam
+       subroutine resetTeamVariables(
+     +        pMin, pMax, pBase, pNSubs, pTotal,
+     +        allPSco)
+       implicit none
+
+       integer pMin(10)
+       integer pMax(10)
+       integer pBase(10)
+       integer pNSubs(10)
+       integer pTotal(10)
+
+       integer allPSco
+
+       allPSco = 0
+
+       pMin(1) = 100
+       pMin(2) = 100
+       pMin(3) = 100
+       pMin(4) = 100
+       pMin(5) = 100
+       pMin(6) = 100
+       pMin(7) = 100
+       pMin(8) = 100
+       pMin(9) = 100
+       pMin(10) = 100
+       
+       pMax(1) = 0
+       pMax(2) = 0
+       pMax(3) = 0
+       pMax(4) = 0
+       pMax(5) = 0
+       pMax(6) = 0
+       pMax(7) = 0
+       pMax(8) = 0
+       pMax(9) = 0
+       pMax(10) = 0
+       
+       pBase(1) = 0
+       pBase(2) = 0
+       pBase(3) = 0
+       pBase(4) = 0
+       pBase(5) = 0
+       pBase(6) = 0
+       pBase(7) = 0
+       pBase(8) = 0
+       pBase(9) = 0
+       pBase(10) = 0
+       
+       pNSubs(1) = 0
+       pNSubs(2) = 0
+       pNSubs(3) = 0
+       pNSubs(4) = 0
+       pNSubs(5) = 0
+       pNSubs(6) = 0
+       pNSubs(7) = 0
+       pNSubs(8) = 0
+       pNSubs(9) = 0
+       pNSubs(10) = 0
+       
+       pTotal(1) = 0
+       pTotal(2) = 0
+       pTotal(3) = 0
+       pTotal(4) = 0
+       pTotal(5) = 0
+       pTotal(6) = 0
+       pTotal(7) = 0
+       pTotal(8) = 0
+       pTotal(9) = 0
+       pTotal(10) = 0
+
+       end

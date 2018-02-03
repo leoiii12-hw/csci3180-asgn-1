@@ -13,8 +13,8 @@ HelloWorld     1Accepted           100
 HelloWorld     2Wrong_Answer       030
 HelloWorld     2Compile Error      000
 Splash         0Compile Error      000
-Splash         0Wrong_Answer       030
-Splash         0Wrong_Answer       060
-Splash         1Wrong_Answer       040
+Splash         0Wrong Answer       030
+Splash         0Wrong Answer       060
+Splash         1Wrong Answer       040
 Splash         1Time Limit Exceeded000
 Splash         1Accepted           100
