@@ -98,14 +98,8 @@
        integer pBase(10)
        integer pNSubs(10)
        integer pTotal(10)
+
        integer i
-
-       real bScore
-       real decay
-       real rScore
-
-       integer curPId
-       integer curPSco
 
        integer allPSco
 
@@ -148,8 +142,38 @@
 
        goto 20
 
-!      Calculate the problem score
-30     curPId = 0
+30     call displayTeamResults(
+     +        pMin, pMax, pBase, pNSubs, pTotal,
+     +        allPSco)
+
+       end
+
+
+
+!      resetTeamVariables
+       subroutine displayTeamResults(
+     +        pMin, pMax, pBase, pNSubs, pTotal,
+     +        allPSco)
+       implicit none
+
+       integer pMin(10)
+       integer pMax(10)
+       integer pBase(10)
+       integer pNSubs(10)
+       integer pTotal(10)
+
+       integer allPSco
+
+       real bScore
+       real decay
+       real rScore
+
+       integer curPId
+       integer curPSco
+
+       integer i
+
+       curPId = 0
 
 40     i = curPId + 1
 
@@ -194,7 +218,9 @@
        end
 
 
-!      processTeam
+
+
+!      resetTeamVariables
        subroutine resetTeamVariables(
      +        pMin, pMax, pBase, pNSubs, pTotal,
      +        allPSco)
